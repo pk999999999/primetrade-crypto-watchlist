@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="PrimeTrade Crypto Watchlist - Track your favorite cryptocurrencies with target prices and alerts">
+  <title>PrimeTrade.ai | Crypto Watchlist Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <!-- ═══════════════════════════════════ -->
+  <!-- Toast Notification Container       -->
+  <!-- ═══════════════════════════════════ -->
+  <div id="toast-container"></div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- Loading Overlay                    -->
+  <!-- ═══════════════════════════════════ -->
+  <div id="loading-overlay" class="loading-overlay hidden">
+    <div class="spinner"></div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- AUTH VIEW (Login / Register)       -->
+  <!-- ═══════════════════════════════════ -->
+  <div id="auth-view" class="view">
+    <div class="auth-container">
+      <!-- Floating Background Elements -->
+      <div class="bg-orb bg-orb-1"></div>
+      <div class="bg-orb bg-orb-2"></div>
+      <div class="bg-orb bg-orb-3"></div>
+
+      <div class="auth-card">
+        <div class="auth-header">
+          <div class="logo">
+            <span class="logo-icon">◆</span>
+            <h1>PrimeTrade<span class="logo-dot">.ai</span></h1>
+          </div>
+          <p class="auth-subtitle">Crypto Watchlist & Signals Platform</p>
+        </div>
+
+        <!-- Tab Switcher -->
+        <div class="auth-tabs">
+          <button id="tab-login" class="auth-tab active" onclick="switchAuthTab('login')">Sign In</button>
+          <button id="tab-register" class="auth-tab" onclick="switchAuthTab('register')">Create Account</button>
+        </div>
+
+        <!-- Login Form -->
+        <form id="login-form" class="auth-form" onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label for="login-email">Email Address</label>
+            <input type="email" id="login-email" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="login-password">Password</label>
+            <input type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
+          </div>
+          <button type="submit" id="login-btn" class="btn btn-primary btn-full">
+            <span>Sign In</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <!-- Register Form -->
+        <form id="register-form" class="auth-form hidden" onsubmit="handleRegister(event)">
+          <div class="form-group">
+            <label for="register-name">Full Name</label>
+            <input type="text" id="register-name" placeholder="John Doe" required minlength="2" maxlength="100">
+          </div>
+          <div class="form-group">
+            <label for="register-email">Email Address</label>
+            <input type="email" id="register-email" placeholder="you@example.com" required autocomplete="email">
+          </div>
+          <div class="form-group">
+            <label for="register-password">Password</label>
+            <input type="password" id="register-password" placeholder="Min 8 chars, uppercase, number, special" required minlength="8">
+            <span class="form-hint">Must include uppercase, lowercase, number, and special character</span>
+          </div>
+          <button type="submit" id="register-btn" class="btn btn-primary btn-full">
+            <span>Create Account</span>
+            <span class="btn-arrow">→</span>
+          </button>
+        </form>
+
+        <div class="auth-footer">
+          <p>Default admin: <code>admin@primetrade.ai</code> / <code>Admin@123</code></p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- DASHBOARD VIEW                     -->
+  <!-- ═══════════════════════════════════ -->
+  <div id="dashboard-view" class="view hidden">
+    <!-- Top Navigation -->
+    <nav class="dashboard-nav">
+      <div class="nav-left">
+        <span class="logo-icon">◆</span>
+        <span class="nav-brand">PrimeTrade<span class="logo-dot">.ai</span></span>
+      </div>
+      <div class="nav-right">
+        <div class="user-info">
+          <span id="user-name" class="user-name">User</span>
+          <span id="user-role-badge" class="role-badge">user</span>
+        </div>
+        <button id="logout-btn" class="btn btn-ghost" onclick="handleLogout()">
+          Sign Out
+        </button>
+      </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <main class="dashboard-content">
+      <!-- Stats Cards -->
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="stat-icon">📋</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-total">0</span>
+            <span class="stat-label">Watchlist Items</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🪙</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-symbols">0</span>
+            <span class="stat-label">Unique Cryptos</span>
+          </div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">🔔</div>
+          <div class="stat-info">
+            <span class="stat-value" id="stat-alerts">0</span>
+            <span class="stat-label">Active Alerts</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Admin Toggle -->
+      <div id="admin-controls" class="admin-controls hidden">
+        <label class="toggle-label">
+          <input type="checkbox" id="view-all-toggle" onchange="loadWatchlist()">
+          <span class="toggle-switch"></span>
+          <span>View All Users' Items (Admin)</span>
+        </label>
+      </div>
+
+      <!-- Watchlist Section -->
+      <div class="watchlist-section">
+        <div class="section-header">
+          <h2>My Crypto Watchlist</h2>
+          <button id="add-item-btn" class="btn btn-primary" onclick="openAddModal()">
+            + Add Crypto
+          </button>
+        </div>
+
+        <!-- Watchlist Table -->
+        <div class="table-container">
+          <table id="watchlist-table">
+            <thead>
+              <tr>
+                <th>Symbol</th>
+                <th>Name</th>
+                <th>Target Price</th>
+                <th>Alert</th>
+                <th>Notes</th>
+                <th>Added</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="watchlist-body">
+              <tr class="empty-row">
+                <td colspan="7">
+                  <div class="empty-state">
+                    <span class="empty-icon">🔍</span>
+                    <p>Your watchlist is empty</p>
+                    <p class="empty-hint">Click "Add Crypto" to start tracking</p>
+                  </div>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- ADD/EDIT MODAL                     -->
+  <!-- ═══════════════════════════════════ -->
+  <div id="item-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeModal()"></div>
+    <div class="modal-content">
+      <div class="modal-header">
+        <h3 id="modal-title">Add to Watchlist</h3>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <form id="item-form" onsubmit="handleItemSubmit(event)">
+        <input type="hidden" id="item-id">
+        <div class="form-row">
+          <div class="form-group">
+            <label for="item-symbol">Symbol *</label>
+            <input type="text" id="item-symbol" placeholder="BTC" required maxlength="10" pattern="[A-Za-z0-9]+">
+          </div>
+          <div class="form-group">
+            <label for="item-name">Name *</label>
+            <input type="text" id="item-name" placeholder="Bitcoin" required maxlength="100">
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label for="item-target-price">Target Price (USD)</label>
+            <input type="number" id="item-target-price" placeholder="100000.00" step="0.01" min="0">
+          </div>
+          <div class="form-group">
+            <label for="item-alert-type">Alert When Price Goes</label>
+            <select id="item-alert-type">
+              <option value="above">Above Target ↑</option>
+              <option value="below">Below Target ↓</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-group">
+          <label for="item-notes">Notes</label>
+          <textarea id="item-notes" placeholder="Your analysis or notes..." rows="3" maxlength="500"></textarea>
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+          <button type="submit" id="modal-submit-btn" class="btn btn-primary">Add to Watchlist</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ═══════════════════════════════════ -->
+  <!-- DELETE CONFIRMATION MODAL          -->
+  <!-- ═══════════════════════════════════ -->
+  <div id="delete-modal" class="modal hidden">
+    <div class="modal-overlay" onclick="closeDeleteModal()"></div>
+    <div class="modal-content modal-sm">
+      <div class="modal-header">
+        <h3>Confirm Delete</h3>
+        <button class="modal-close" onclick="closeDeleteModal()">✕</button>
+      </div>
+      <p class="delete-message">Are you sure you want to remove <strong id="delete-item-name"></strong> from your watchlist?</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-ghost" onclick="closeDeleteModal()">Cancel</button>
+        <button type="button" id="confirm-delete-btn" class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/api.js"></script>
+  <script src="js/auth.js"></script>
+  <script src="js/dashboard.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>

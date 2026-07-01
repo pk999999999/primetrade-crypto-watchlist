@@ -1,0 +1,27 @@
+services:
+  - type: web
+    name: primetrade-crypto-watchlist
+    runtime: node
+    region: oregon
+    plan: free
+    buildCommand: cd backend && npm install
+    startCommand: cd backend && npm start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 3000
+      - key: JWT_SECRET
+        generateValue: true
+      - key: JWT_EXPIRES_IN
+        value: 24h
+      - key: DB_PATH
+        value: ./data/database.sqlite
+      - key: ADMIN_EMAIL
+        value: admin@primetrade.ai
+      - key: ADMIN_PASSWORD
+        value: Admin@123
+    disk:
+      name: sqlite-data
+      mountPath: /opt/render/project/src/backend/data
+      sizeGB: 1
